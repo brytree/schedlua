@@ -1,5 +1,4 @@
---test_scheduler.lua
-package.path = package.path..";../?.lua"
+package.path = "../?.lua;"..package.path
 
 Scheduler = require("schedlua.scheduler")()
 Task = require("schedlua.task")
@@ -10,7 +9,7 @@ local function getNewTaskID()
 	return taskID;
 end
 
-local function spawn(scheduler, func, priority, ...)
+local function spawn(scheduler, func, ...)
 	local task = Task(func, ...)
 	task.TaskID = getNewTaskID();
 	Scheduler:scheduleTask(task, {...});
@@ -23,6 +22,8 @@ local function task1()
 	print("first task, first line")
 	Scheduler:yield();
 	print("first task, second line")
+	Scheduler:yield();
+	print("first task, third line")
 end
 
 local function task2()
@@ -34,14 +35,14 @@ local function task3()
 end
 
 local function main()
-	local t1 = spawn(Scheduler, task1, 0)
-	local t2 = spawn(Scheduler, task2, 10)
-	local t3 = spawn(Scheduler, task3, 10)
+	local t1 = spawn(Scheduler, task1)
+	local t2 = spawn(Scheduler, task2)
+  local t3 = spawn(Scheduler, task3)
 
 
 	while (true) do
 		--print("STATUS: ", t1:getStatus(), t2:getStatus())
-		if t1:getStatus() == "dead" and t2:getStatus() == "dead" then
+		if t1:getStatus() == "dead" and t2:getStatus() == "dead"  and t3:getStatus == "dead" then
 			break;
 		end
 		Scheduler:step()
@@ -49,5 +50,11 @@ local function main()
 end
 
 main()
+
+--[[
+	Approach is dual: 
+	Priority Queue vs Non Priority Queue
+	NPQ reduces priority for everything in it every quantum
+]]--
 
 

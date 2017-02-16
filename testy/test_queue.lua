@@ -7,13 +7,12 @@ local q1 = queue();
 
 --print("Q Length (0): ", q1:length())
 
-
 local t1 = {Priority = 20, name = "1"}
-local t2 = {Priority = 50, name = "2"}
+local t2 = {Priority = 0, name = "2"}
 local t3 = {Priority = 30, name = "3"}
-local t4 = {Priority = 10, name = "4"}
+local t4 = {Priority = 0, name = "4"}
 local t5 = {Priority = 10, name = "5"}
-local t6 = {Priority = 10, name = "6"}
+local t6 = {Priority = 0, name = "6"}
 
 local function priority_comp( a,b ) 
    return a.Priority < b.Priority 
