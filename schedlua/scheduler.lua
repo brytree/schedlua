@@ -60,7 +60,8 @@ local Scheduler_mt = {
 
 function Scheduler.init(self, ...)
 	local obj = {
-		TasksReadyToRun = Queue();
+		PriorityTasksReady = Queue();
+		NonPriorityTasksReady = Queue();
 	}
 	setmetatable(obj, Scheduler_mt)
 	
@@ -84,7 +85,7 @@ end
 	on how many tasks there are.
 --]]
 function Scheduler.tasksPending(self)
-	return self.TasksReadyToRun:length();
+	return self.PriorityTasksReady:length();
 end
 
 
@@ -101,7 +102,7 @@ end
 -- metamethod implemented.
 -- The 'params' is a table of parameters which will be passed to the function
 -- when it's ready to run.
-function Scheduler.scheduleTask(self, task, params, priority)
+function Scheduler.scheduleTask(self, task, params)
 	--print("Scheduler.scheduleTask: ", task, params)
 	params = params or {}
 	
@@ -115,16 +116,18 @@ function Scheduler.scheduleTask(self, task, params, priority)
 	-- but, there are some tasks which are system tasks
 	-- which should not be subject to the same scheduling
 	-- as user code tasks
-	-- self.TasksReadyToRun:pinsert(task, priority_comp);
-
+	-- self.PriorityTasksReady:pinsert(task, priority_comp);
 
 	if priority == 0 then
-		self.TasksReadyToRun:pushFront(task);	
+		self.PriorityTasksReady:pinsert(task, priority_comp);	
 	else
-		self.TasksReadyToRun:enqueue(task);	
+		self.NonPriorityTasksReady.enqueue(task);	
 	end
 
+	--print("PriorityTasksReady Length (0): ", PriorityTasksReady:length())
+
 	task.state = "readytorun"
+	task.priority = true;
 
 	return task;
 end
@@ -144,7 +147,15 @@ end
 
 function Scheduler.step(self)
 	-- Now check the regular fibers
-	local task = self.TasksReadyToRun:dequeue()
+	local task
+	
+	if priority then
+		task = self.PriorityTasksReady:dequeue();
+		priority = false
+	else 
+		task = self.NonPriorityTasksReady:dequeue();
+		priority = true
+	end
 
 	-- If no fiber in ready queue, then just return
 	if task == nil then
